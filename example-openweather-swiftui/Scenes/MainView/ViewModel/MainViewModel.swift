@@ -22,7 +22,7 @@ public class MainViewModel: ObservableObject {
     private var anyCancellable: Set<AnyCancellable> = .init()
     
     private var currentWeather: WeatherItem?
-    var unitsWeather: WeatherRequestUnits = .fahrenheit
+    var unitsWeather: WeatherRequestUnits = .celsius
     
     init(getCurrentWeatherDataUseCase: GetCurrentWeatherDataUseCase = GetCurrentWeatherDataUseCaseImpl()) {
         self.getCurrentWeatherDataUseCase = getCurrentWeatherDataUseCase
