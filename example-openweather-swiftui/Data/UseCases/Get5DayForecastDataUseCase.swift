@@ -10,7 +10,7 @@ import Foundation
 import Moya
 
 protocol Get5DayForecastDataUseCase {
-    func execute(lat: Double?, lon: Double?) -> AnyPublisher<WeatherResponse?, MoyaError>
+    func execute(q: String, units: WeatherRequestUnits) -> AnyPublisher<WeatherResponse?, MoyaError>
 }
 
 class Get5DayForecastDataUseCaseImpl: Get5DayForecastDataUseCase {
@@ -21,8 +21,8 @@ class Get5DayForecastDataUseCaseImpl: Get5DayForecastDataUseCase {
         self.repository = repository
     }
     
-    func execute(lat: Double?, lon: Double?) -> AnyPublisher<WeatherResponse?, MoyaError>{
-        let request = WeatherRequest(lat: lat, lon: lon)
+    func execute(q: String, units: WeatherRequestUnits) -> AnyPublisher<WeatherResponse?, MoyaError>{
+        let request = WeatherRequest(q: "\(q),th", units: units.rawValue)
         return repository.get5DayForecastData(request: request)
     }
 }

@@ -6,75 +6,65 @@
 //
 
 import Combine
+import SwiftUI
 
 public class MainViewModel: ObservableObject {
-    
-    private let getCoordinatesByLocationNameUseCase: GetCoordinatesByLocationNameUseCase
-    private let getCurrentWeatherDataUseCase: GetCurrentWeatherDataUseCase
-    private var anyCancellable: Set<AnyCancellable> = .init()
     
     enum State {
         case idle
         case loading
-        case searchLoaded([WeatherItem])
-        case currentLoaded(WeatherItem, WeatherRequestUnits)
+        case loaded(WeatherItem)
     }
     
-    @Published private(set) var stateSearch: State = .idle
-    @Published private(set) var stateCurrent: State = .idle
+    @Published private(set) var state: State = .idle
     
-    private var listSearchLocation: [WeatherItem]?
-    private var currentLocation: WeatherItem?
-    private var unitsWeather: WeatherRequestUnits = .fahrenheit
-
-    init(getCoordinatesByLocationNameUseCase: GetCoordinatesByLocationNameUseCase = GetCoordinatesByLocationNameUseCaseImpl(),
-         getCurrentWeatherDataUseCase: GetCurrentWeatherDataUseCase = GetCurrentWeatherDataUseCaseImpl()) {
-        self.getCoordinatesByLocationNameUseCase = getCoordinatesByLocationNameUseCase
+    private let getCurrentWeatherDataUseCase: GetCurrentWeatherDataUseCase
+    private var anyCancellable: Set<AnyCancellable> = .init()
+    
+    private var currentWeather: WeatherItem?
+    var unitsWeather: WeatherRequestUnits = .fahrenheit
+    
+    init(getCurrentWeatherDataUseCase: GetCurrentWeatherDataUseCase = GetCurrentWeatherDataUseCaseImpl()) {
         self.getCurrentWeatherDataUseCase = getCurrentWeatherDataUseCase
     }
     
-    func setStateSearch(_ state: State) {
-        self.stateSearch = state
+    deinit {
+        debugPrint("🔅 Deinitialized. \(String(describing: self))")
     }
     
-    func setUnitsWeather(units: WeatherRequestUnits) {
+    func setState(_ state: State) {
+        self.state = state
+    }
+    
+    func switchUnitsWeather(units: WeatherRequestUnits) {
         self.unitsWeather = units
+        self.getCurrentWeatherData(search: self.currentWeather?.name)
     }
     
-    func getCoordinatesByLocation(search: String) {
-        self.listSearchLocation?.removeAll()
-        guard !search.isEmpty else { return }
-        self.setStateSearch(.loading)
-        self.getCoordinatesByLocationNameUseCase.execute(q: search)
+    func getCurrentWeatherData(search: String?) {
+        self.setState(.idle)
+        guard let search = search, !search.isEmpty else { return }
+        self.currentWeather = nil
+        self.setState(.loading)
+        self.getCurrentWeatherDataUseCase.execute(q: search, units: self.unitsWeather)
             .sink { _ in
-                guard let listSearchLocation = self.listSearchLocation, !listSearchLocation.isEmpty else {
-                    self.setStateSearch(.idle)
+                guard let currentWeather = self.currentWeather else {
+                    self.setState(.idle)
                     return
                 }
-                self.setStateSearch(.searchLoaded(listSearchLocation))
+                self.setState(.loaded(currentWeather))
             } receiveValue: { resp in
-                self.listSearchLocation = resp
+                guard let resp = resp, resp.cod == 200 else {
+                    return
+                }
+                self.currentWeather = resp
             }
             .store(in: &self.anyCancellable)
     }
     
-    func getCurrentWeatherData(lat: Double?, lon: Double?) {
-        self.stateCurrent = .idle
-        guard let lat = lat, let lon = lon else { return }
-        self.stateCurrent = .loading
-        self.getCurrentWeatherDataUseCase.execute(lat: lat, lon: lon, units: self.unitsWeather)
-            .sink { _ in
-                guard let currentLocation = self.currentLocation else {
-                    self.stateCurrent = .idle
-                    return
-                }
-                self.stateCurrent = .currentLoaded(currentLocation, self.unitsWeather)
-            } receiveValue: { resp in
-                self.currentLocation = resp
-            }
-            .store(in: &self.anyCancellable)
+    func getCurrentWeather() -> WeatherItem? {
+        return self.currentWeather
     }
-    
     
 }
 

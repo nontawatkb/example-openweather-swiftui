@@ -9,10 +9,31 @@ import SwiftUI
 
 struct DetailView: View {
 
+    @StateObject var viewModel: DetailViewModel
+
     var body: some View {
         VStack {
-            Text("Test 1")
+            switch self.viewModel.state {
+            case .loading:
+                ProgressView()
+                    .padding(.all, 20)
+            case .idle:
+                EmptyView()
+            case let .loaded(items):
+                ScrollView(.vertical, showsIndicators: false) {
+                    VStack(spacing: 3) {
+                        ForEach(items, id: \.self) { item in
+                            WeatherDayCardView(itemGroup: item)
+                        }
+                    }
+                }
+            }
         }
-        .navigationBarBackButtonHidden(false)
+        .navigationTitle(viewModel.navigationTitle)
+        .onAppear {
+            self.viewModel.get5DayForecastData()
+        }
+        .onDisappear {
+        }
     }
 }

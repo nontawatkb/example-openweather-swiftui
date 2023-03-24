@@ -9,7 +9,7 @@ import Foundation
 
 public struct WeatherResponse: Codable, Hashable {
     
-    public var cod: Int?
+    public var cod: String?
     public var message: Int?
     public var list: [WeatherItem]?
     
@@ -25,6 +25,7 @@ public struct WeatherResponse: Codable, Hashable {
 
 public struct WeatherItem: Codable, Hashable {
     
+    public var cod: Int?
     public var name: String?
     public var lat: Double?
     public var lon: Double?
@@ -37,9 +38,15 @@ public struct WeatherItem: Codable, Hashable {
     public var main: WeatherItemMain?
     public var wind: WeatherItemWind?
     
+    public var dtTxt: String?
+    public var dtDate: Date? {
+        return dtTxt?.convertToDate()
+    }
+    
     public init() {}
     
     enum CodingKeys: String, CodingKey {
+        case cod = "cod"
         case name = "name"
         case lat = "lat"
         case lon = "lon"
@@ -50,6 +57,7 @@ public struct WeatherItem: Codable, Hashable {
         case weather = "weather"
         case main = "main"
         case wind = "wind"
+        case dtTxt = "dt_txt"
     }
 }
 
@@ -104,4 +112,18 @@ public struct WeatherItemWind: Codable, Hashable {
     enum CodingKeys: String, CodingKey {
         case speed = "speed"
     }
+}
+
+public struct WeatherGroupDayItem: Hashable {
+    
+    public let date: Date?
+    public let listItem: [WeatherItem]?
+    public let unit: WeatherRequestUnits
+    
+    init(date: Date?, listItem: [WeatherItem]?, unit: WeatherRequestUnits) {
+        self.date = date
+        self.listItem = listItem
+        self.unit = unit
+    }
+    
 }

@@ -10,7 +10,7 @@ import Foundation
 import Moya
 
 protocol GetCurrentWeatherDataUseCase {
-    func execute(lat: Double, lon: Double, units: WeatherRequestUnits) -> AnyPublisher<WeatherItem?, MoyaError>
+    func execute(q: String, units: WeatherRequestUnits) -> AnyPublisher<WeatherItem?, MoyaError>
 }
 
 class GetCurrentWeatherDataUseCaseImpl: GetCurrentWeatherDataUseCase {
@@ -21,8 +21,8 @@ class GetCurrentWeatherDataUseCaseImpl: GetCurrentWeatherDataUseCase {
         self.repository = repository
     }
     
-    func execute(lat: Double, lon: Double, units: WeatherRequestUnits) -> AnyPublisher<WeatherItem?, MoyaError>{
-        let request = WeatherRequest(lat: lat, lon: lon, units: units.rawValue)
+    func execute(q: String, units: WeatherRequestUnits) -> AnyPublisher<WeatherItem?, MoyaError>{
+        let request = WeatherRequest(q: "\(q),th", units: units.rawValue)
         return repository.getCurrentWeatherData(request: request)
     }
 }

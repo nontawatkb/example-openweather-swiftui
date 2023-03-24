@@ -13,24 +13,6 @@ struct example_openweather_swiftuiApp: App {
         WindowGroup {
             MainView(viewModel: MainViewModel())
                 .preferredColorScheme(.light)
-//            TestView()
         }
     }
 }
-
-import SwiftUI
-
-struct TestView: View {
-    
-    var body: some View {
-        VStack {
-            Text("HELLO WORLD")
-        }
-    }
-}
-
-//struct TestView_Previews: PreviewProvider {
-//    static var previews: some View {
-//        TestView()
-//    }
-//}
